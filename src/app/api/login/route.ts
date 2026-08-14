@@ -7,13 +7,18 @@ const cors = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
 
+type LoginBody = {
+  username?: unknown
+  password?: unknown
+}
+
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: cors })
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const body = (await request.json()) as LoginBody
     const username = String(body?.username || '')
     const password = String(body?.password || '')
     const user = await verifyPassword(username, password)
