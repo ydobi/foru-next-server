@@ -11,5 +11,13 @@
   "observability": {
     "enabled": true
   },
-  "upload_source_maps": true
+  "upload_source_maps": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "foru-auth",
+      "database_id": "08f8745c-8dfd-4c18-89e7-caf64c2fd3f4",
+      "migrations_dir": "migrations"
+    }
+  ]
 }

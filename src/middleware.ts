@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { corsHeaders } from '@/lib/cors';
 
 function isPublicApi(pathname: string) {
   return (
@@ -9,19 +10,11 @@ function isPublicApi(pathname: string) {
   );
 }
 
-function corsHeaders() {
-  return {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  };
-}
-
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (pathname.startsWith('/api') && request.method === 'OPTIONS') {
-    return new NextResponse(null, { status: 204, headers: corsHeaders() });
+    return new NextResponse(null, { status: 204, headers: corsHeaders(request) });
   }
 
   const requestHeaders = new Headers(request.headers);
@@ -32,10 +25,10 @@ export function middleware(request: NextRequest) {
   console.log(`[${new Date().toISOString()}] ${request.method} ${request.url}`);
 
   if (pathname.startsWith('/api')) {
-    const cors = corsHeaders();
-    response.headers.set('Access-Control-Allow-Origin', cors['Access-Control-Allow-Origin']);
-    response.headers.set('Access-Control-Allow-Methods', cors['Access-Control-Allow-Methods']);
-    response.headers.set('Access-Control-Allow-Headers', cors['Access-Control-Allow-Headers']);
+    const cors = corsHeaders(request);
+    for (const [key, value] of Object.entries(cors)) {
+      response.headers.set(key, value);
+    }
   }
 
   if (pathname.startsWith('/api') && !isPublicApi(pathname)) {
@@ -47,7 +40,7 @@ export function middleware(request: NextRequest) {
           status: 401,
           headers: {
             'Content-Type': 'application/json',
-            ...corsHeaders(),
+            ...corsHeaders(request),
           },
         }
       );
