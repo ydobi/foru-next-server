@@ -71,10 +71,33 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 成功返回 `{ "access_token": "...", "user": { "username": "admin", "role": "admin" } }`。
 
-账号 `admin`、`user`。密码明文不进仓库。
+账号 `admin`、`user`。密码以 bcrypt 哈希存在 D1 `users` 表，明文不进仓库。本地 `next dev` 无 D1 时回退到源码内置哈希。
 
 ### GET /api/me
 
 `Authorization: Bearer <access_token>`，返回 `{ "username", "role" }`。
 
 生产环境请设置 `JWT_SECRET`。
+
+## Cloudflare D1（登录用户）
+
+生产 Worker 从绑定名为 **DB** 的 D1 数据库读取用户：
+
+| | |
+| :-- | :-- |
+| Database name | `foru-auth` |
+| database_id | `08f8745c-8dfd-4c18-89e7-caf64c2fd3f4` |
+| Binding | `DB` |
+| Migrations | `migrations/` |
+
+`POST /api/login` 调用 `verifyPassword`，通过 `@opennextjs/cloudflare` 的 `getCloudflareContext().env.DB` 执行 `SELECT username, password_hash, role FROM users WHERE username = ?`，再用 bcryptjs 比对密码。JWT 签发与 `/api/me` 不变。
+
+本地 `next dev` 没有 Worker / D1 绑定，`getCloudflareContext` 会失败，此时回退到与 seed 相同的演示账号。生产 Worker 必须使用 D1。
+
+应用远程 migration（需已登录 wrangler）：
+
+```bash
+npx wrangler d1 migrations apply foru-auth --remote
+```
+
+或在 Cloudflare Dashboard → D1 → `foru-auth` 控制台执行 `migrations/` 下的 SQL。
