@@ -66,12 +66,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 ### POST /api/login
 
 ```json
-{ "username": "admin", "password": "admin123" }
+{ "username": "admin", "password": "<password>" }
 ```
 
 成功返回 `{ "access_token": "...", "user": { "username": "admin", "role": "admin" } }`。
 
-演示账号：`admin / admin123`（admin）、`user / user123`（user）。源码里是 bcrypt 哈希。
+账号 `admin`、`user`。密码明文不进仓库。
 
 ### GET /api/me
 
