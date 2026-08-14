@@ -77,7 +77,27 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 `Authorization: Bearer <access_token>`，返回 `{ "username", "role" }`。
 
-生产环境请设置 `JWT_SECRET`。
+### JWT_SECRET
+
+生产环境必须将 `JWT_SECRET` 设为 Cloudflare Worker secret，不要写进 `wrangler.json` 的 vars：
+
+```bash
+npx wrangler secret put JWT_SECRET
+```
+
+未配置或为空时，`/api/login` 与 `/api/me` 会失败（500），不会使用内置密钥签名。
+
+本地 `next dev`（无 Cloudflare 上下文 / D1）可把 `JWT_SECRET=` 写进已 gitignore 的 `.dev.vars`（模板见 `.dev.vars.example`）。未设置时仅此时使用本地开发回退密钥。
+
+### CORS
+
+浏览器跨域仅允许：
+
+- `https://foru-tools.pages.dev`
+- `http://localhost:3000`
+- `http://127.0.0.1:3000`
+
+请求 Origin 在白名单内才回显 `Access-Control-Allow-Origin`；否则不发送该头（不会使用 `*`）。
 
 ## Cloudflare D1（登录用户）
 

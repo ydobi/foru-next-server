@@ -1,0 +1,5 @@
+# Copy to .dev.vars (gitignored). Do not commit a real secret.
+# For production, set JWT_SECRET as a Cloudflare Worker secret:
+#   npx wrangler secret put JWT_SECRET
+# Do not put JWT_SECRET in wrangler.json vars.
+JWT_SECRET=

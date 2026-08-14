@@ -1,22 +1,18 @@
 import { NextResponse } from 'next/server'
-import { signToken, verifyPassword } from '@/lib/auth'
-
-const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+import { AuthConfigError, signToken, verifyPassword } from '@/lib/auth'
+import { corsHeaders } from '@/lib/cors'
 
 type LoginBody = {
   username?: unknown
   password?: unknown
 }
 
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: cors })
+export async function OPTIONS(request: Request) {
+  return new NextResponse(null, { status: 204, headers: corsHeaders(request) })
 }
 
 export async function POST(request: Request) {
+  const cors = corsHeaders(request)
   try {
     const body = (await request.json()) as LoginBody
     const username = String(body?.username || '')
@@ -30,7 +26,13 @@ export async function POST(request: Request) {
     }
     const access_token = await signToken(user)
     return NextResponse.json({ access_token, user }, { headers: cors })
-  } catch {
+  } catch (err) {
+    if (err instanceof AuthConfigError) {
+      return NextResponse.json(
+        { error: 'Server misconfigured' },
+        { status: 500, headers: cors }
+      )
+    }
     return NextResponse.json(
       { error: 'Invalid request body' },
       { status: 400, headers: cors }

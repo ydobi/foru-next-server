@@ -17,6 +17,13 @@ type UserRow = {
   role: string
 }
 
+export class AuthConfigError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'AuthConfigError'
+  }
+}
+
 // bcryptjs hashes only — plaintext lives in README, not here
 const USERS: SeedUser[] = [
   {
@@ -31,9 +38,29 @@ const USERS: SeedUser[] = [
   },
 ]
 
+/** Local `next dev` only. Never used when Cloudflare context/DB is present or NODE_ENV=production. */
+const LOCAL_DEV_JWT_SECRET = 'foru-next-server-local-dev-only'
+
+function hasCloudflareContext(): boolean {
+  try {
+    return Boolean(getCloudflareContext())
+  } catch {
+    return false
+  }
+}
+
 function secretKey() {
-  const secret = process.env.JWT_SECRET || 'foru-next-server-demo-jwt-secret'
-  return new TextEncoder().encode(secret)
+  const fromEnv = process.env.JWT_SECRET?.trim()
+  if (fromEnv) {
+    return new TextEncoder().encode(fromEnv)
+  }
+
+  // Fail closed in production / when D1 or Cloudflare context is present.
+  if (process.env.NODE_ENV === 'production' || hasCloudflareContext() || getD1()) {
+    throw new AuthConfigError('JWT_SECRET is required')
+  }
+
+  return new TextEncoder().encode(LOCAL_DEV_JWT_SECRET)
 }
 
 /**
@@ -94,7 +121,8 @@ export async function userFromToken(token: string): Promise<PublicUser | null> {
     const role = payload.role === 'admin' ? 'admin' : payload.role === 'user' ? 'user' : null
     if (!username || role === null) return null
     return { username, role }
-  } catch {
+  } catch (err) {
+    if (err instanceof AuthConfigError) throw err
     return null
   }
 }
