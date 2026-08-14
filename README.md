@@ -58,3 +58,23 @@ To learn more about Next.js, take a look at the following resources:
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+
+## foru-tools 登录 API
+
+供 [foru-tools](https://github.com/ydobi/foru-tools) 使用。`/api/login` 与 `/api/me` 不需要 `x-api-key`。
+
+### POST /api/login
+
+```json
+{ "username": "admin", "password": "admin123" }
+```
+
+成功返回 `{ "access_token": "...", "user": { "username": "admin", "role": "admin" } }`。
+
+演示账号：`admin / admin123`（admin）、`user / user123`（user）。源码里是 bcrypt 哈希。
+
+### GET /api/me
+
+`Authorization: Bearer <access_token>`，返回 `{ "username", "role" }`。
+
+生产环境请设置 `JWT_SECRET`。
