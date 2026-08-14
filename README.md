@@ -71,7 +71,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 成功返回 `{ "access_token": "...", "user": { "username": "admin", "role": "admin" } }`。
 
-账号 `admin`、`user`。密码以 bcrypt 哈希存在 D1 `users` 表，明文不进仓库。本地 `next dev` 无 D1 时回退到源码内置哈希。
+账号 `admin`（admin）、`user`（user）。密码以 bcrypt 哈希存在 D1 `users` 表，明文不进仓库。本地 `next dev` 无 D1 时回退到源码内置哈希。
 
 ### GET /api/me
 
